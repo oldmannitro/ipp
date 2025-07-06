@@ -8,7 +8,7 @@ CC = gcc
 
 # C flags
 CFLAGS = -std=c99 -D_POSIX_C_SOURCE=200809L -Wall -Wextra -pedantic -O3
-LDFLAGS =
+LDFLAGS = -lsqlite3
 
 # Target
 PROG = ipp
@@ -20,7 +20,7 @@ OBJS = ${SRCS:.c=.o}
 all: ${PROG}
 
 ${PROG}: ${OBJS}
-	${CC} ${LDFLAGS} -o ${PROG} ${OBJS}
+	${CC} -o ${PROG} ${OBJS} ${LDFLAGS}
 
 .c.o:
 	${CC} ${CFLAGS} -c $<
