@@ -32,8 +32,12 @@ install: all
 	mkdir -p ${DESTDIR}/usr/local/bin
 	cp -f ${PROG} ${DESTDIR}/usr/local/bin
 	chmod 755 ${DESTDIR}/usr/local/bin/${PROG}
+	mkdir -p ${DESTDIR}/usr/local/share/man/man1
+	cp -f ipp.1 ${DESTDIR}/usr/local/share/man/man1
+	chmod 644 ${DESTDIR}/usr/local/share/man/man1/ipp.1
 
 uninstall:
 	rm -f ${DESTDIR}/usr/local/bin/${PROG}
+	rm -f ${DESTDIR}/usr/local/share/man/man1/ipp.1
 
 .PHONY: all clean install uninstall
