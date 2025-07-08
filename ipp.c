@@ -2,16 +2,19 @@
  *
  * ipp (IOS Photo Processor) provides functions such as copying favourite photos.
  * It assumes the IOS file systems is already mounted using a tool such as ifuse.
- *
- * Future enhancement will include the ability to specifiy a source album
+ * 
+ * TO DO
+ * Future enhancement will include the ability to specifiy a source album including FAVOURITES and ALL
+ * Add a summary at the end to say how many files were copied and how many failed.  Quiet mode that prints a . for each file plus the summary 
+ * Test error message if there are no favourite photos
  */
 
 #include <sqlite3.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "ipp.h"
 #include <string.h>
+#include "ipp.h"
 
 static int
 callback(void *data, int argc, char **argv, char **azColName)
@@ -19,7 +22,7 @@ callback(void *data, int argc, char **argv, char **azColName)
     CallbackData *cb_data = (CallbackData *)data;
     char src_path[1024];
     char dest_path[1024];
-    char command[2048];
+    char command[3072];
     char *zdirectory = NULL;
     char *zfilename = NULL;
 
@@ -37,10 +40,11 @@ callback(void *data, int argc, char **argv, char **azColName)
         snprintf(command, sizeof(command), "cp \"%s\" \"%s\" 2>/dev/null", src_path, dest_path);
 
         printf("Copying %s to %s\n", src_path, dest_path);
-        if (system(command) == -1) {
+        if (system(command) != 0) {
             fprintf(stderr, "Failed to copy file\n");
         }
     } else {
+        fprintf(stderr, "No favourite photos found\n");
         fprintf(stderr, "Error: ZDIRECTORY or ZFILENAME not found in query results.\n");
     }
     return 0;
@@ -55,9 +59,11 @@ main(int argc, char *argv[])
     }
 
     if (geteuid() != 0) {
-        fprintf(stderr, "This program must be run as root.\n");
+        fprintf(stderr, "This program must be run as root to read the IOS file system.\n");
         return 2;
     }
+    /* Add a check to see if <destination> exists and is a directory */
+     
     sqlite3 *db;
     char *err_msg = 0;
     int rc;
@@ -71,11 +77,13 @@ main(int argc, char *argv[])
     rc = sqlite3_open(db_path, &db);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db));
+        fprintf(stderr, "Check %s is mounted with read access to the IOS device.\n", cb_data.mountpoint);
         sqlite3_close(db);
         return 3;
     }
     char *sql = "SELECT ZDIRECTORY, ZFILENAME, ZFAVORITE FROM ZASSET where ZFAVORITE=1";
-    rc = sqlite3_exec(db, sql, callback, &cb_data, &err_msg); if (rc != SQLITE_OK)
+    rc = sqlite3_exec(db, sql, callback, &cb_data, &err_msg); 
+    if (rc != SQLITE_OK)
     {
         fprintf(stderr, "Failed to select data\n");
         fprintf(stderr, "SQL error: %s\n", err_msg);

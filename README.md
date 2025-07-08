@@ -22,7 +22,7 @@ make
 
 ## Usage
 
-The `ipp` program requires two arguments: the iOS mount point and the destination directory. It must be run as root.
+The `ipp` program requires two arguments: the iOS mount point and the destination directory. It must be run as root as this seems to be necessary to access the ios file system
 
 ```bash
 sudo ./ipp <ios_mount_point> <destination_directory>
