@@ -1,0 +1,170 @@
+.TH IPP 1 "July 2025" "ipp 1.0" "User Commands"
+.SH NAME
+ipp \- IOS Photo Processor for copying favorite photos from iOS devices
+.SH SYNOPSIS
+.B ipp
+.I ios_mount_point destination
+.SH DESCRIPTION
+.B ipp
+(IOS Photo Processor) is a command-line utility that extracts and copies favorite photos from iOS devices to a local directory. The program reads the iOS Photos.sqlite database to identify photos marked as favorites and copies them to the specified destination.
+
+The iOS device must be mounted using a tool such as
+.BR ifuse (1)
+before running
+.BR ipp .
+The program requires root privileges to access the iOS file system.
+
+.SH OPTIONS
+.B ipp
+does not accept any command-line options. It requires exactly two arguments:
+
+.TP
+.I ios_mount_point
+The path where the iOS device is mounted. This should be the root directory of the mounted iOS file system.
+
+.TP
+.I destination
+The local directory where favorite photos will be copied. The directory must exist and be writable.
+
+.SH EXAMPLES
+Mount an iOS device using ifuse and copy favorite photos:
+.PP
+.nf
+.RS
+# Mount the iOS device
+sudo ifuse /mnt/ios
+
+# Copy favorite photos to ~/Pictures/Favorites
+sudo ipp /mnt/ios ~/Pictures/Favorites
+
+# Unmount when done
+sudo fusermount -u /mnt/ios
+.RE
+.fi
+
+.SH FILES
+.TP
+.I ios_mount_point/PhotoData/Photos.sqlite
+The iOS Photos database containing metadata about all photos and their favorite status.
+
+.TP
+.I ios_mount_point/DCIM/
+Directory structure where iOS stores the actual photo files.
+
+.SH EXIT STATUS
+.B ipp
+exits with the following status codes:
+
+.TP
+.B 0
+Success. All favorite photos were processed successfully.
+
+.TP
+.B 1
+Invalid command-line arguments. The program was not called with exactly two arguments.
+
+.TP
+.B 2
+Permission denied. The program must be run as root to access the iOS file system.
+
+.TP
+.B 3
+Database error. Cannot open the Photos.sqlite database. This usually indicates that the iOS device is not properly mounted or the mount point is incorrect.
+
+.TP
+.B 4
+SQL error. Failed to execute the database query to retrieve favorite photos.
+
+.SH DEPENDENCIES
+.B ipp
+requires the following:
+
+.TP
+.B SQLite3
+The program links against libsqlite3 to read the iOS Photos database.
+
+.TP
+.B ifuse
+A FUSE-based file system for mounting iOS devices. This must be installed separately and used to mount the iOS device before running
+.BR ipp .
+
+.TP
+.B Root privileges
+Required to access the mounted iOS file system.
+
+.SH DIAGNOSTICS
+.B ipp
+provides the following diagnostic messages:
+
+.TP
+.B "Usage: ipp <ios mount point> <destination>"
+Displayed when the program is called with incorrect arguments.
+
+.TP
+.B "This program must be run as root to read the IOS file system."
+The program was not executed with root privileges.
+
+.TP
+.B "Cannot open database: [error message]"
+The Photos.sqlite database could not be opened. Check that the iOS device is properly mounted.
+
+.TP
+.B "Check [mount point] is mounted with read access to the IOS device."
+Additional guidance when database access fails.
+
+.TP
+.B "Failed to select data"
+The SQL query to retrieve favorite photos failed.
+
+.TP
+.B "No favourite photos found"
+No photos are marked as favorites on the iOS device.
+
+.TP
+.B "Failed to copy file"
+A file copy operation failed during processing.
+
+.SH LIMITATIONS
+.B ipp
+currently has the following limitations:
+
+.IP \(bu 2
+Only processes photos marked as favorites. Future versions may support other albums.
+
+.IP \(bu 2
+Does not provide detailed statistics about the copy operation.
+
+.IP \(bu 2
+Does not verify that the destination directory exists before starting.
+
+.IP \(bu 2
+Error handling for individual file copies is minimal.
+
+.SH SECURITY CONSIDERATIONS
+.B ipp
+requires root privileges to access the iOS file system. This is necessary because iOS devices mounted with ifuse typically require elevated permissions to access the photo database and files.
+
+The program executes shell commands using
+.BR system (3)
+to copy files. File paths are properly quoted to prevent shell injection, but users should ensure that mount points and destinations do not contain malicious content.
+
+.SH BUGS
+Individual file copy failures are reported but do not stop the overall operation. The program will continue processing remaining files even if some copies fail.
+
+File paths are limited to 1024 characters, which may be insufficient for very long path names.
+
+.SH AUTHOR
+Written by Craig.
+
+.SH SEE ALSO
+.BR ifuse (1),
+.BR sqlite3 (1),
+.BR cp (1),
+.BR fusermount (1)
+
+.SH COPYRIGHT
+See the LICENSE file for copyright and license details.
+
+.SH HISTORY
+.B ipp
+was developed to simplify the process of extracting favorite photos from iOS devices on Unix-like systems.
