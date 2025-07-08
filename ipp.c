@@ -2,10 +2,11 @@
  *
  * ipp (IOS Photo Processor) provides functions such as copying favourite photos.
  * It assumes the IOS file systems is already mounted using a tool such as ifuse.
- * 
+ *
  * TO DO
  * Future enhancement will include the ability to specifiy a source album including FAVOURITES and ALL
  * Add a summary at the end to say how many files were copied and how many failed.  Quiet mode that prints a . for each file plus the summary 
+ * Add a check to see if <destination> exists and is a directory 
  * Test error message if there are no favourite photos
  */
 
@@ -62,8 +63,7 @@ main(int argc, char *argv[])
         fprintf(stderr, "This program must be run as root to read the IOS file system.\n");
         return 2;
     }
-    /* Add a check to see if <destination> exists and is a directory */
-     
+
     sqlite3 *db;
     char *err_msg = 0;
     int rc;
